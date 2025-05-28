@@ -1,0 +1,13 @@
+.venv/
+
+# env files
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE 설정
+.vscode
+.idea
