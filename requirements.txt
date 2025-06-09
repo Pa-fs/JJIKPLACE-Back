@@ -5,4 +5,4 @@ pymysql
 python-dotenv
 requests
 selenium
-BeautifulSoup
+beautifulsoup4
