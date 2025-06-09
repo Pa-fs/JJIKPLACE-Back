@@ -11,7 +11,8 @@ class PhotoStudio(Base):
     ps_name = Column(String(100))
     road_addr = Column(String(200))
     addr = Column(String(200))
-    open_hour = Column(String(100))
+    open_hour = Column(String(4))
+    closed_hour = Column(String(4))
     phone = Column(String(50))
     lat = Column(String(100))
     lng = Column(String(100))
@@ -20,6 +21,9 @@ class PhotoStudio(Base):
     thumbnail_url = Column(String(255))
     kakao_id = Column(String(50), unique=True)
     homepage_url = Column(String(255))
+    sido = Column(String(150))
+    gungu = Column(String(100))
+    dongmyeon = Column(String(100))
 
     reviews = relationship("Review", back_populates="studio")
 
