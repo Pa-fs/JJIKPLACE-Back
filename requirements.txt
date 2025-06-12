@@ -6,3 +6,10 @@ python-dotenv
 requests
 selenium
 beautifulsoup4
+authlib
+python-jose
+httpx
+itsdangerous
+passlib[bcrypt]
+pydantic[email]
+email_validator
