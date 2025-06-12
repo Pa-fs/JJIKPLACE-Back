@@ -8,6 +8,8 @@ from app.auth.jwt import create_jwt_token
 from app.auth.oauth import KAKAO_REDIRECT_URI, kakao, google, GOOGLE_REDIRECT_URI
 from app.database import get_db
 from app.models import User
+from app.routers.auth import response_jwt_in_cookie
+from app.util.allowed_front_urls import get_safe_redirect_url
 
 router = APIRouter()
 
@@ -61,7 +63,8 @@ async def callback_via_kakao(request: Request, db: Session = Depends(get_db)):
 
     jwt_token = create_jwt_token(user.user_id, user.email)
 
-    return {"access_token": jwt_token, "token_type": "Bearer"}
+    redirect_url = get_safe_redirect_url(request)
+    return response_jwt_in_cookie(redirect_url, jwt_token)
 
 # @router.get("/auth/naver/login")
 # async def login_via_naver(request: Request):
@@ -109,5 +112,5 @@ async def callback_via_google(
     user = get_or_create_user(db, "google", google_id, google_email)
 
     jwt_token = create_jwt_token(user.user_id, user.sns_email)
-
-    return {"access_token": jwt_token, "token_type": "Bearer"}
+    redirect_url = get_safe_redirect_url(request)
+    return response_jwt_in_cookie(redirect_url, jwt_token)
