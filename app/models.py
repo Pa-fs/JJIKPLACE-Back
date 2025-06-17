@@ -27,6 +27,7 @@ class PhotoStudio(Base):
 
     reviews = relationship("Review", back_populates="studio")
 
+    categories = relationship("PhotoStudioCategory", back_populates="studio")
 
 class Review(Base):
     __tablename__ = "review"
@@ -55,3 +56,25 @@ class User(Base):
     connected_sns = Column(String(10))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+class Category(Base):
+    __tablename__ = "category"
+
+    category_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow())
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow())
+
+    studio = relationship("PhotoStudioCategory", back_populates="category")
+
+class PhotoStudioCategory(Base):
+    __tablename__ = "photo_studio_category"
+
+    psc_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    category_id = Column(BigInteger, ForeignKey("category.category_id"), nullable=False)
+    ps_id = Column(BigInteger, ForeignKey("photo_studios.ps_id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow())
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow(), onupdate=datetime.datetime.utcnow())
+
+    category = relationship("Category", back_populates="studio")
+    studio = relationship("PhotoStudio", back_populates="categories")
