@@ -17,6 +17,9 @@ class MarkerItem(BaseModel):
     name: str = Field(..., description="매장 이름")
     lat: float = Field(..., description="위도")
     lng: float = Field(..., description="경도")
+    road_addr: str = Field(..., description="도로명 주소")
+    review_avg_score: float = Field(..., description="리뷰 평점")
+    review_cnt: int = Field(..., description="리뷰 개수")
 
 class MarkerResponse(BaseModel):
     level: str = Field(default="marker", description="클러스터링 레벨")
