@@ -18,6 +18,6 @@ class ReviewItem(BaseModel):
 class ReviewScrollResponse(BaseModel):
     items: List[ReviewItem]
     total: int = Field(..., description="리뷰 총 개수")
-    offset: int = Field(..., description="무한스크롤을 위한 오프셋 0, 4, 8 ...")
-    limit: int = Field(..., description="한 페이지당 기본 4개씩 표현")
+    offset: int = Field(..., description="스크롤 시작 위치")
+    limit: int = Field(..., description="한 스크롤 당 기본 4개씩 표현")
     has_more: bool = Field(..., description="마지막 스크롤인지 판단하는 변수")
