@@ -41,7 +41,7 @@ class FormLogin(BaseModel):
     password: str
 
 @router.post("/auth/login")
-def form_login(request: Request, orm: FormLogin, db: Session = Depends(get_db)):
+def form_login(request: Request, form: FormLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == form.email).first()
     if not user or not verify_password(form.password, user.password):
         raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 일치하지 않습니다.")
