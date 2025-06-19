@@ -1,12 +1,16 @@
 import os
 import uuid
 
+from fastapi import HTTPException
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from fastapi import UploadFile
 
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 AZURE_CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER_NAME")
 AZURE_PUBLIC_URL = os.getenv("AZURE_STORAGE_PUBLIC_URL")
+
+ALLOWED_EXTENSIONS = os.getenv("ALLOWED_FILE_EXTENSIONS")
+MAX_FILE_SIZE_MB = os.getenv("MAX_FILE_SIZE_MB")
 
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
 
@@ -32,3 +36,19 @@ def upload_file_to_azure(file: UploadFile) -> str:
 
 def get_full_azure_url(filename: str) -> str:
     return f"{AZURE_PUBLIC_URL}/{filename}"
+
+
+def validate_image_upload(file: UploadFile):
+    # 확장자 확인
+    _, ext = os.path.splitext(file.filename.lower())
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="허용되지 않은 이미지 확장자입니다.")
+
+    # 파일크기 확인
+    contents = file.file.read()
+    file_size_mb = len(contents) / (1024 * 1024)
+    if file_size_mb > MAX_FILE_SIZE_MB:
+        raise HTTPException(status_code=400, detail="이미지 크기는 5MB 이하만 허용됩니다.")
+
+    # 파일 포인터 초기화
+    file.file.seek(0)

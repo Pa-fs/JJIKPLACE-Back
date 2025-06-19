@@ -9,6 +9,7 @@ class ReviewItem(BaseModel):
     review_id: int = Field(2124973472, description="리뷰 ID")
     rating: float = Field(..., description="리뷰 평점")
     content: Optional[str] = Field(..., description="리뷰 내용")
+    image_url: Optional[str] = Field(..., description="리뷰 이미지")
     created_at: datetime = Field(..., description="리뷰 생성일")
     user_nickname: str = Field(..., description="리뷰 작성자")
 
@@ -26,15 +27,15 @@ class ReviewScrollResponse(BaseModel):
 
 # 리뷰 등록
 class ReviewCreate(BaseModel):
-    rating: float = Field(..., ge=0, le=5)
-    content: Optional[str]
-    ps_id: int
+    rating: float = Field(..., ge=0, le=5, description="리뷰 평점")
+    content: Optional[str] = Field(default=None, description="리뷰 내용")
+    ps_id: int = Field(..., description="매장 ID")
 
     @classmethod
     def as_form(cls,
-                rating: float = Form(...),
-                content: str = Form(...),
-                ps_id: int = Form(...)):
+                rating: float = Form(description="리뷰 평점", ge=0, le=5),
+                content: Optional[str] = Form(None, description="리뷰 내용", example=None), # 선택 입력
+                ps_id: int = Form(description="매장 ID")):
         return cls(rating=rating, content=content, ps_id=ps_id)
 
 

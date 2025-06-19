@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.dto.response.ReviewResponseSchemas import ReviewCreate
 from app.models import Review
-from app.util.azure_upload import upload_file_to_azure, get_full_azure_url
+from app.util.azure_upload import upload_file_to_azure, get_full_azure_url, validate_image_upload
 
 
 def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, limit: int):
@@ -16,6 +16,7 @@ def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, lim
             r.review_id,
             r.rating,
             r.content,
+            r.image_url,
             r.created_at,
             u.nick_name AS user_nickname
         FROM review r
@@ -34,8 +35,16 @@ def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, lim
         count_sql = text("SELECT COUNT(*) FROM review WHERE ps_id = :ps_id")
         total = db.execute(count_sql, {"ps_id": ps_id}).scalar()
 
+        items = []
+        # 이미지 URL에 전체 경로 붙이기
+        for row in result:
+            row_dict = dict(row)
+            if row_dict["image_url"]:
+                row_dict["image_url"] = get_full_azure_url(row_dict["image_url"])
+            items.append(row_dict)
+
         return {
-            "items": result,
+            "items": items,
             "total": total,
             "offset": offset,
             "limit": limit,
@@ -43,13 +52,21 @@ def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, lim
         }
     except Exception as e:
         print(f"리뷰 목록 조회 시 에러 발생: {e}")
-        return []
+        return {
+            "items": [],
+            "total": 0,
+            "offset": offset,
+            "limit": limit,
+            "has_more": False
+        }
 
 # 리뷰 등록
 def create_review(db: Session, data: ReviewCreate, user_id: int, image_file: UploadFile):
     image_url = None
 
     if image_file and image_file != "":
+        validate_image_upload(image_file)
+
         try:
             image_filename = upload_file_to_azure(image_file)
             image_url = image_filename # DB에 저장

@@ -41,7 +41,7 @@ def get_reviews_by_studio(
 def post_review(
         db: Session = Depends(get_db),
         review: ReviewCreate = Depends(ReviewCreate.as_form),
-        image: Union[UploadFile, None, str] = File(default=None), # 스웨거에서 send empty value 선택 시 image="" 로 보내어 422 에러 발생 방지 -> 이미지를 포함시키지 않음
+        image: Union[UploadFile, None, str] = File(default=None, description="리뷰 이미지 (선택)"), # 스웨거에서 send empty value 선택 시 image="" 로 보내어 422 에러 발생 방지 -> 이미지를 포함시키지 않음
         user_info: dict = Depends(get_current_user)
 ):
     user_id = int(user_info["sub"])
