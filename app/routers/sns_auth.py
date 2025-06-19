@@ -7,7 +7,7 @@ from starlette import status
 from app.auth.jwt import create_jwt_token
 from app.auth.oauth import KAKAO_REDIRECT_URI, kakao, google, GOOGLE_REDIRECT_URI
 from app.database import get_db
-from app.models import User
+from app.models import User, kst_now
 from app.routers.auth import response_jwt_in_cookie
 from app.util.allowed_front_urls import get_safe_redirect_url
 
@@ -23,9 +23,7 @@ def get_or_create_user(db: Session, sns_type, sns_id, sns_email):
         user = User(
             sns_type= sns_type,
             sns_id= sns_id,
-            sns_email= sns_email,
-            created_at= datetime.utcnow(),
-            updated_at= datetime.utcnow(),
+            sns_email= sns_email
         )
         db.add(user)
         db.commit()
@@ -33,7 +31,7 @@ def get_or_create_user(db: Session, sns_type, sns_id, sns_email):
     if user and user.sns_id != sns_id:
         user.sns_id = sns_id
         user.sns_type = sns_type
-        user.updated_at = datetime.utcnow()
+        user.updated_at = kst_now()
         db.commit()
         db.refresh(user)
     return user

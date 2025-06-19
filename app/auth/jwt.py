@@ -1,7 +1,8 @@
+import datetime
 import os
 from fastapi import Request, HTTPException, status
 from jose import jwt, ExpiredSignatureError, JWTError
-from datetime import datetime, timedelta
+from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +13,7 @@ def create_jwt_token(user_id: int, email: str):
     payload = {
         "sub": str(user_id),
         "email": email,
-        "exp": datetime.utcnow() + timedelta(minutes=15)
+        "exp": datetime.datetime.utcnow() + timedelta(minutes=15)
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM)
 

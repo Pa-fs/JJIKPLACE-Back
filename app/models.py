@@ -1,9 +1,14 @@
+from zoneinfo import ZoneInfo
+
 from sqlalchemy import Column, String, BigInteger, Text, DateTime, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import datetime
 
 Base = declarative_base()
+
+def kst_now():
+    return datetime.datetime.now(ZoneInfo("Asia/Seoul"))
 
 class PhotoStudio(Base):
     __tablename__ = "photo_studios"
@@ -16,8 +21,8 @@ class PhotoStudio(Base):
     phone = Column(String(50))
     lat = Column(String(100))
     lng = Column(String(100))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=kst_now)
+    updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
     thumbnail_url = Column(String(255))
     kakao_id = Column(String(50), unique=True)
     homepage_url = Column(String(255))
@@ -35,8 +40,8 @@ class Review(Base):
     rating = Column(Float)
     content = Column(Text)
     image_url = Column(String(255))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=kst_now)
+    updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
     user_id = Column(BigInteger, ForeignKey("user.user_id"))
     ps_id = Column(BigInteger, ForeignKey("photo_studios.ps_id"))
 
@@ -54,16 +59,16 @@ class User(Base):
     sns_type = Column(String(255))
     sns_email = Column(String(100), unique=True)
     connected_sns = Column(String(10))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=kst_now)
+    updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
 
 class Category(Base):
     __tablename__ = "category"
 
     category_id = Column(BigInteger, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow())
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow())
+    created_at = Column(DateTime, default=kst_now)
+    updated_at = Column(DateTime, default=kst_now)
 
     studio = relationship("PhotoStudioCategory", back_populates="category")
 
@@ -73,8 +78,8 @@ class PhotoStudioCategory(Base):
     psc_id = Column(BigInteger, primary_key=True, autoincrement=True)
     category_id = Column(BigInteger, ForeignKey("category.category_id"), nullable=False)
     ps_id = Column(BigInteger, ForeignKey("photo_studios.ps_id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow())
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow(), onupdate=datetime.datetime.utcnow())
+    created_at = Column(DateTime, default=kst_now)
+    updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
 
     category = relationship("Category", back_populates="studio")
     studio = relationship("PhotoStudio", back_populates="categories")

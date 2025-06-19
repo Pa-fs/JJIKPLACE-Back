@@ -27,9 +27,7 @@ def form_signup(form: FormSignUp, db: Session = Depends(get_db)):
     user = User(
         email= form.email,
         password= hash_password(form.password),
-        nick_name= form.nick_name,
-        created_at= datetime.utcnow(),
-        updated_at= datetime.utcnow(),
+        nick_name= form.nick_name
     )
     db.add(user)
     db.commit()

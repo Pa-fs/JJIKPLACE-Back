@@ -1,3 +1,4 @@
+from fastapi import Form
 from datetime import datetime
 from typing import Optional, List
 
@@ -21,3 +22,28 @@ class ReviewScrollResponse(BaseModel):
     offset: int = Field(..., description="스크롤 시작 위치")
     limit: int = Field(..., description="한 스크롤 당 기본 4개씩 표현")
     has_more: bool = Field(..., description="마지막 스크롤인지 판단하는 변수")
+
+
+# 리뷰 등록
+class ReviewCreate(BaseModel):
+    rating: float = Field(..., ge=0, le=5)
+    content: Optional[str]
+    ps_id: int
+
+    @classmethod
+    def as_form(cls,
+                rating: float = Form(...),
+                content: str = Form(...),
+                ps_id: int = Form(...)):
+        return cls(rating=rating, content=content, ps_id=ps_id)
+
+
+class ReviewResponse(BaseModel):
+    review_id: int
+    rating: float
+    content: str
+    image_url: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    user_id: int
+    ps_id: int
