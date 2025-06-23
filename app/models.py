@@ -53,6 +53,7 @@ class User(Base):
     user_id = Column(BigInteger, primary_key=True, autoincrement=True)
     email = Column(String(100), unique=True)
     nick_name = Column(String(100))
+    profile_image = Column(Text)
     password = Column(String(255))
     telno = Column(String(50))
     sns_id = Column(String(255))

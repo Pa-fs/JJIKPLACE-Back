@@ -1,16 +1,7 @@
-from fastapi import APIRouter, Depends, Request
-from starlette.responses import RedirectResponse, JSONResponse
+from starlette.responses import JSONResponse
 from starlette.status import HTTP_200_OK
 
-from app.auth.jwt import get_current_user
-
-router = APIRouter()
-
-@router.get("/profile/me")
-def my_profile(user= Depends(get_current_user)):
-    return {"message": "인증 성공", "user": user}
-
-def response_jwt_in_cookie(redirect_url: str, jwt_token: str):
+def response_jwt_in_cookie(redirect_url, jwt_token: str):
     # response = RedirectResponse(redirect_url) # CORS 문제 야기함
 
     response_body = {

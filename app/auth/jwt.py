@@ -5,16 +5,23 @@ from jose import jwt, ExpiredSignatureError, JWTError
 from datetime import timedelta
 from dotenv import load_dotenv
 
+from app.util.azure_upload import get_full_azure_url
+
 load_dotenv()
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 
-def create_jwt_token(user_id: int, email: str):
+def create_jwt_token(email: str, nickname: str, profile_image: str = None):
     payload = {
-        "sub": str(user_id),
+        # "sub": str(user_id),
         "email": email,
-        "exp": datetime.datetime.utcnow() + timedelta(minutes=15)
+        "exp": datetime.datetime.utcnow() + timedelta(minutes=15),
+        "nick_name": nickname
     }
+
+    if profile_image:
+        payload["profile_image"] = get_full_azure_url(profile_image)
+
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
 def decode_jwt_token(token: str):

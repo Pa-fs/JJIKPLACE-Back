@@ -33,10 +33,14 @@ def get_reviews_by_studio(
     return review_service.get_review_details_in_photo_studio(db, ps_id, offset, limit)
 
 
-@router.post("/reviews",
+@router.post("/review",
              response_model=ReviewResponse,
-             summary="리뷰 등록 API (JWT 필수)",
-             description="access_token 쿠키가 필수",
+             summary="리뷰 등록",
+             description="""
+                         access_token 쿠키가 필수 \n
+                         허용 확장자: .jpg, .jpeg, .png, .gif, .webp
+                         허용 용량: 5 MB \n
+                         """,
              dependencies=[Security(cookie_scheme)])
 def post_review(
         db: Session = Depends(get_db),

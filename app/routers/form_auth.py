@@ -18,7 +18,8 @@ class FormSignUp(BaseModel):
     password: str
     nick_name: str
 
-@router.post("/auth/signup")
+@router.post("/auth/signup",
+             summary="폼 회원가입")
 def form_signup(form: FormSignUp, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == form.email).first()
     if existing:
@@ -38,12 +39,13 @@ class FormLogin(BaseModel):
     email: EmailStr
     password: str
 
-@router.post("/auth/login")
+@router.post("/auth/login",
+             summary="폼 로그인")
 def form_login(request: Request, form: FormLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == form.email).first()
     if not user or not verify_password(form.password, user.password):
         raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 일치하지 않습니다.")
 
-    jwt_token = create_jwt_token(user.user_id, user.email)
+    jwt_token = create_jwt_token(user.email, user.nick_name, user.profile_image)
     redirect_url = get_safe_redirect_url(request)
     return response_jwt_in_cookie(redirect_url, jwt_token)

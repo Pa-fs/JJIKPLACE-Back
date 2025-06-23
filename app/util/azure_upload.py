@@ -10,7 +10,7 @@ AZURE_CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER_NAME")
 AZURE_PUBLIC_URL = os.getenv("AZURE_STORAGE_PUBLIC_URL")
 
 ALLOWED_EXTENSIONS = os.getenv("ALLOWED_FILE_EXTENSIONS")
-MAX_FILE_SIZE_MB = os.getenv("MAX_FILE_SIZE_MB")
+MAX_FILE_SIZE_MB = float(os.getenv("MAX_FILE_SIZE_MB"))
 
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
 
