@@ -13,28 +13,6 @@ from app.util.allowed_front_urls import get_safe_redirect_url
 
 router = APIRouter()
 
-class FormSignUp(BaseModel):
-    email: EmailStr
-    password: str
-    nick_name: str
-
-@router.post("/auth/signup",
-             summary="폼 회원가입")
-def form_signup(form: FormSignUp, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == form.email).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="이미 가입된 이메일입니다.")
-
-    user = User(
-        email= form.email,
-        password= hash_password(form.password),
-        nick_name= form.nick_name
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return {"message": "회원가입 완료"}
-
 class FormLogin(BaseModel):
     email: EmailStr
     password: str
