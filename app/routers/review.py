@@ -48,6 +48,6 @@ def post_review(
         image: Union[UploadFile, None, str] = File(default=None, description="리뷰 이미지 (선택)"), # 스웨거에서 send empty value 선택 시 image="" 로 보내어 422 에러 발생 방지 -> 이미지를 포함시키지 않음
         user_info: dict = Depends(get_current_user)
 ):
-    user_id = int(user_info["sub"])
-    return review_service.create_review(db, review, user_id, image_file=image)
+    user_email = user_info["email"]
+    return review_service.create_review(db, review, user_email, image_file=image)
 

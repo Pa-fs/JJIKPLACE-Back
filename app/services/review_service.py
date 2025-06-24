@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.dto.response.ReviewResponseSchemas import ReviewCreate
-from app.models import Review
+from app.models import Review, User
 from app.util.azure_upload import upload_file_to_azure, get_full_azure_url, validate_image_upload
 
 
@@ -61,7 +61,13 @@ def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, lim
         }
 
 # 리뷰 등록
-def create_review(db: Session, data: ReviewCreate, user_id: int, image_file: UploadFile):
+def create_review(db: Session, data: ReviewCreate, user_email: str, image_file: UploadFile):
+
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    user_id = user.user_id
+
     image_url = None
 
     if image_file and image_file != "":
