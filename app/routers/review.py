@@ -5,7 +5,7 @@ from fastapi.params import Query
 from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
-from app.auth.jwt import get_current_user
+from app.auth.jwt import get_current_user, bearer_scheme
 from app.database import get_db
 from app.dto.response.ReviewResponseSchemas import ReviewScrollResponse, ReviewResponse, ReviewCreate
 from app.services import review_service
@@ -41,7 +41,7 @@ def get_reviews_by_studio(
                          허용 확장자: .jpg, .jpeg, .png, .gif, .webp
                          허용 용량: 5 MB \n
                          """,
-             dependencies=[Security(cookie_scheme)])
+             dependencies=[Security(bearer_scheme)])
 def post_review(
         db: Session = Depends(get_db),
         review: ReviewCreate = Depends(ReviewCreate.as_form),

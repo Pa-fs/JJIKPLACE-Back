@@ -3,12 +3,12 @@ from datetime import datetime
 from fastapi import APIRouter, Request, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from starlette import status
+from starlette.responses import RedirectResponse
 
 from app.auth.jwt import create_jwt_token
 from app.auth.oauth import KAKAO_REDIRECT_URI, kakao, google, GOOGLE_REDIRECT_URI
 from app.database import get_db
 from app.models import User, kst_now
-from app.routers.auth import response_jwt_in_cookie
 from app.util.allowed_front_urls import get_safe_redirect_url
 
 router = APIRouter()
@@ -59,10 +59,10 @@ async def callback_via_kakao(request: Request, db: Session = Depends(get_db)):
 
     user = get_or_create_user(db, sns_type= "kakao", sns_id= kakao_id, sns_email= kakao_email)
 
-    jwt_token = create_jwt_token(user.user_id, user.email)
+    access_token = create_jwt_token(user.user_id, user.email)
 
     redirect_url = get_safe_redirect_url(request)
-    return response_jwt_in_cookie(redirect_url, jwt_token)
+    return RedirectResponse(f"{redirect_url}/login/callback?token={access_token}")
 
 # @router.get("/auth/naver/login")
 # async def login_via_naver(request: Request):
@@ -109,6 +109,6 @@ async def callback_via_google(
 
     user = get_or_create_user(db, "google", google_id, google_email)
 
-    jwt_token = create_jwt_token(user.user_id, user.sns_email)
+    access_token = create_jwt_token(user.user_id, user.sns_email)
     redirect_url = get_safe_redirect_url(request)
-    return response_jwt_in_cookie(redirect_url, jwt_token)
+    return RedirectResponse(f"{redirect_url}/login/callback?token={access_token}")
