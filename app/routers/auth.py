@@ -19,7 +19,7 @@ def response_jwt_in_cookie(redirect_url, jwt_token: str):
         key="access_token",
         value=jwt_token,
         httponly=True,
-        secure=True,
-        samesite="None" # CSRF 방지용
+        secure=False, # localhost=True
+        samesite="None"
     )
     return response
