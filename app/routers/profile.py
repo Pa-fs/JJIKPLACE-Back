@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import Depends, APIRouter, UploadFile, File, Security
+from fastapi import Depends, APIRouter, UploadFile, File, Security, status
 from fastapi.params import Query
 from sqlalchemy.orm import Session
 
@@ -60,3 +60,16 @@ def my_review_management(
         size: int = Query(3, ge= 1, le=50),
 ):
     return profile_service.my_review_management(db, user_info, page, size)
+
+
+@router.delete(
+    "/profile/reviews/{review_id}",
+    summary="리뷰 삭제 (본인만)",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_my_review(
+        review_id: int,
+        db: Session = Depends(get_db),
+        user_info: dict = Depends(get_current_user)
+):
+    return profile_service.delete_my_review(review_id, db, user_info)

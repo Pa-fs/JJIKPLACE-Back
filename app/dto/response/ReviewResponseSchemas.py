@@ -40,23 +40,23 @@ class ReviewCreate(BaseModel):
 
 
 class ReviewResponse(BaseModel):
-    review_id: int = Field(2124973472, description="리뷰 ID")
-    rating: float = Field(..., description="리뷰 평점")
-    content: Optional[str] = Field(..., description="리뷰 내용")
-    image_url: Optional[str] = Field(..., description="리뷰 이미지")
-    created_at: datetime = Field(..., description="리뷰 생성일")
-    updated_at: datetime
-    user_id: int
-    ps_id: int
-
-class MyReviewResponse(BaseModel):
-    review_id: int = Field(2124973472, description="리뷰 ID")
+    review_id: int = Field(..., description="리뷰 ID")
     rating: float = Field(..., description="리뷰 평점")
     content: Optional[str] = Field(..., description="리뷰 내용")
     image_url: Optional[str] = Field(..., description="리뷰 이미지")
     created_at: datetime = Field(..., description="리뷰 생성일")
     updated_at: datetime = Field(..., description="리뷰 수정일")
-    ps_id : int = Field(..., description="매장 ID")
+    user_id: int = Field(..., description="사용자 ID")
+    ps_id: int = Field(2124973472, description="매장 ID")
+
+class MyReviewResponse(BaseModel):
+    review_id: int = Field(..., description="리뷰 ID")
+    rating: float = Field(..., description="리뷰 평점")
+    content: Optional[str] = Field(..., description="리뷰 내용")
+    image_url: Optional[str] = Field(..., description="리뷰 이미지")
+    created_at: datetime = Field(..., description="리뷰 생성일")
+    updated_at: datetime = Field(..., description="리뷰 수정일")
+    ps_id : int = Field(2124973472, description="매장 ID")
     name: str = Field(..., description="매장 이름")
 
     @field_serializer("created_at")

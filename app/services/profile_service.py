@@ -6,8 +6,16 @@ from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
 from app.models import User, Review
 from app.util.azure_upload import get_full_azure_url, validate_image_upload, upload_file_to_azure
 
+def verify_user(db, user_info):
+    user = db.query(User).filter(User.email == user_info["email"]).first()
+    if not user:
+        raise HTTPException(404, "사용자를 찾을 수 없습니다.")
+
+    return user
 
 def update_profile_image(db: Session, user, file = UploadFile):
+    user = verify_user(db, user)
+
     if not file:
         raise HTTPException(status_code=400, detail="이미지 파일이 필요합니다.")
 
@@ -33,9 +41,7 @@ def update_profile_image(db: Session, user, file = UploadFile):
 
 
 def my_recent_reviews(db: Session, user_info, limit = int):
-    user = db.query(User).filter(User.email == user_info["email"]).first()
-    if not user:
-        raise HTTPException(404, "사용자를 찾을 수 없습니다.")
+    user = verify_user(db, user_info)
 
     reviews = (
         db.query(Review)
@@ -66,9 +72,7 @@ def my_recent_reviews(db: Session, user_info, limit = int):
 
 
 def my_review_management(db, user_info, page, size):
-    user = db.query(User).filter(User.email == user_info["email"]).first()
-    if not user:
-        raise HTTPException(404, "사용자를 찾을 수 없습니다.")
+    user = verify_user(db, user_info)
 
     total = db.query(func.count(Review.review_id)) \
             .filter(Review.user_id == user.user_id) \
@@ -107,3 +111,19 @@ def my_review_management(db, user_info, page, size):
          has_more= (page * size) < total,
          items= items
     )
+
+
+def delete_my_review(review_id, db, user_info):
+    user = verify_user(db, user_info)
+
+    review = db.query(Review).filter(Review.review_id == review_id).first()
+    if not review:
+        raise HTTPException(404, "리뷰를 찾을 수 없습니다.")
+
+    if review.user_id != user.user_id:
+        raise HTTPException(403, "본인이 작성한 리뷰만 삭제할 수 있습니다.")
+
+    db.delete(review)
+    db.commit()
+
+    return
