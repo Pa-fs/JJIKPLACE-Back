@@ -1,8 +1,12 @@
+from typing import List
+
 from fastapi import Depends, APIRouter, UploadFile, File, Security
+from fastapi.params import Query
 from sqlalchemy.orm import Session
 
 from app.auth.jwt import get_current_user, bearer_scheme
 from app.database import get_db
+from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
 from app.services import profile_service
 
 router = APIRouter()
@@ -28,3 +32,31 @@ def update_profile_image(
     user: dict = Depends(get_current_user)
 ):
     return profile_service.update_profile_image(db, user, image_file)
+
+
+@router.get(
+    "/profile/my-reviews",
+    response_model=List[MyReviewResponse],
+    summary="마이페이지 리뷰 최근 10개"
+)
+def my_recent_reviews(
+        db: Session = Depends(get_db),
+        user_info: dict = Depends(get_current_user),
+        limit: int = 10
+):
+    return profile_service.my_recent_reviews(db, user_info, limit)
+
+
+@router.get(
+    "/profile/my-reviews/detail",
+    response_model=ReviewPage,
+    summary="마이페이지 리뷰 관리",
+    description="리뷰 상세목록 페이지네이션 기반"
+)
+def my_review_management(
+        db: Session = Depends(get_db),
+        user_info: dict = Depends(get_current_user),
+        page: int = Query(1, ge= 1),
+        size: int = Query(3, ge= 1, le=50),
+):
+    return profile_service.my_review_management(db, user_info, page, size)

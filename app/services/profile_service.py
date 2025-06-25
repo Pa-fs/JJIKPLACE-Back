@@ -1,7 +1,9 @@
 from fastapi import HTTPException, UploadFile
-from sqlalchemy.orm import Session
+from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
 
-from app.models import User
+from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
+from app.models import User, Review
 from app.util.azure_upload import get_full_azure_url, validate_image_upload, upload_file_to_azure
 
 
@@ -28,3 +30,80 @@ def update_profile_image(db: Session, user, file = UploadFile):
     db.commit()
 
     return {"message": "프로필 이미지가 업데이트되었습니다.", "profile_image": full_image_url}
+
+
+def my_recent_reviews(db: Session, user_info, limit = int):
+    user = db.query(User).filter(User.email == user_info["email"]).first()
+    if not user:
+        raise HTTPException(404, "사용자를 찾을 수 없습니다.")
+
+    reviews = (
+        db.query(Review)
+        .options(joinedload(Review.studio))
+        .filter(Review.user_id == user.user_id)
+        .order_by(Review.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    result: list[MyReviewResponse] = []
+    for r in reviews:
+        image_url = get_full_azure_url(r.image_url) if r.image_url else None
+        result.append(
+            MyReviewResponse(
+                review_id= r.review_id,
+                rating= r.rating,
+                content= r.content,
+                image_url= image_url,
+                ps_id= r.ps_id,
+                name= r.studio.ps_name,
+                created_at= r.created_at,
+                updated_at= r.updated_at,
+            )
+        )
+
+    return result
+
+
+def my_review_management(db, user_info, page, size):
+    user = db.query(User).filter(User.email == user_info["email"]).first()
+    if not user:
+        raise HTTPException(404, "사용자를 찾을 수 없습니다.")
+
+    total = db.query(func.count(Review.review_id)) \
+            .filter(Review.user_id == user.user_id) \
+            .scalar()
+
+    offset = (page - 1) * size
+    reviews = (
+        db.query(Review)
+        .options(joinedload(Review.studio))
+        .filter(Review.user_id == user.user_id)
+        .order_by(Review.created_at.desc())
+        .offset(offset)
+        .limit(size)
+        .all()
+    )
+
+    items: list[MyReviewResponse] = []
+    for r in reviews:
+        items.append(
+            MyReviewResponse(
+                review_id = r.review_id,
+                rating= r.rating,
+                content= r.content,
+                image_url= get_full_azure_url(r.image_url) if r.image_url else None,
+                name= r.studio.ps_name,
+                ps_id= r.studio.ps_id,
+                created_at= r.created_at,
+                updated_at= r.updated_at,
+            )
+        )
+
+    return ReviewPage(
+         total= total,
+         page= page,
+         size= size,
+         has_more= (page * size) < total,
+         items= items
+    )

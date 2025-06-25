@@ -40,11 +40,32 @@ class ReviewCreate(BaseModel):
 
 
 class ReviewResponse(BaseModel):
-    review_id: int
-    rating: float
-    content: str
-    image_url: Optional[str]
-    created_at: datetime
+    review_id: int = Field(2124973472, description="리뷰 ID")
+    rating: float = Field(..., description="리뷰 평점")
+    content: Optional[str] = Field(..., description="리뷰 내용")
+    image_url: Optional[str] = Field(..., description="리뷰 이미지")
+    created_at: datetime = Field(..., description="리뷰 생성일")
     updated_at: datetime
     user_id: int
     ps_id: int
+
+class MyReviewResponse(BaseModel):
+    review_id: int = Field(2124973472, description="리뷰 ID")
+    rating: float = Field(..., description="리뷰 평점")
+    content: Optional[str] = Field(..., description="리뷰 내용")
+    image_url: Optional[str] = Field(..., description="리뷰 이미지")
+    created_at: datetime = Field(..., description="리뷰 생성일")
+    updated_at: datetime = Field(..., description="리뷰 수정일")
+    ps_id : int = Field(..., description="매장 ID")
+    name: str = Field(..., description="매장 이름")
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, dt: datetime, _info) -> str:
+        return dt.strftime("%Y.%m.%d")
+
+class ReviewPage(BaseModel):
+    total: int = Field(..., description="리뷰 총 개수")
+    page: int = Field(..., description="현재 페이지")
+    size: int = Field(..., description="페이지 당 개수")
+    has_more: bool = Field(..., description="마지막 페이지 확인 변수")
+    items: List[MyReviewResponse] = Field(..., description="리뷰 목록")
