@@ -46,7 +46,7 @@ class Review(Base):
     ps_id = Column(BigInteger, ForeignKey("photo_studios.ps_id"))
 
     studio = relationship("PhotoStudio", back_populates="reviews")
-
+    writer = relationship("User", back_populates="reviews")
 
 class User(Base):
     __tablename__ = "user"
@@ -62,6 +62,8 @@ class User(Base):
     connected_sns = Column(String(10))
     created_at = Column(DateTime, default=kst_now)
     updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
+
+    reviews = relationship("Review", back_populates="writer")
 
 class Category(Base):
     __tablename__ = "category"

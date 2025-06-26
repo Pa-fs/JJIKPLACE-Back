@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.jwt import get_current_user, bearer_scheme
 from app.database import get_db
-from app.dto.response.ReviewResponseSchemas import ReviewScrollResponse, ReviewResponse, ReviewCreate
+from app.dto.response.ReviewResponseSchemas import ReviewScrollResponse, ReviewResponse, ReviewCreate, ReviewDetail
 from app.services import review_service
 
 router = APIRouter()
@@ -51,3 +51,15 @@ def post_review(
     user_email = user_info["email"]
     return review_service.create_review(db, review, user_email, image_file=image)
 
+
+@router.get(
+    "/studios/{ps_id}/reviews/{review_id}",
+    response_model=ReviewDetail,
+    summary="리뷰 상세 조회 (단 건)"
+)
+def a_detail_review(
+        db: Session = Depends(get_db),
+        ps_id: int = Path(..., description="매장 ID"),
+        review_id: int = Path(..., description="리뷰 ID"),
+):
+    return review_service.a_review_detail(db, ps_id, review_id)

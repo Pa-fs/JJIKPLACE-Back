@@ -2,9 +2,9 @@ import datetime
 
 from fastapi import UploadFile, HTTPException
 from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from app.dto.response.ReviewResponseSchemas import ReviewCreate
+from app.dto.response.ReviewResponseSchemas import ReviewCreate, ReviewDetail
 from app.models import Review, User
 from app.util.azure_upload import upload_file_to_azure, get_full_azure_url, validate_image_upload
 
@@ -102,3 +102,29 @@ def create_review(db: Session, data: ReviewCreate, user_email: str, image_file: 
         "user_id": review.user_id,
         "ps_id": review.ps_id,
     }
+
+
+def a_review_detail(db, ps_id, review_id):
+    review = (
+        db.query(Review)
+        .options(joinedload(Review.writer))
+        .filter(Review.review_id == review_id)
+        .first()
+    )
+
+    if not review or review.ps_id != ps_id:
+        raise HTTPException(404, "리뷰를 찾을 수 없습니다")
+
+    return ReviewDetail(
+        review_id= review.review_id,
+        rating= review.rating,
+        content= review.content,
+        image_url= get_full_azure_url(review.image_url) if review.image_url else None,
+        created_at= review.created_at,
+        updated_at= review.updated_at,
+        user_id= review.user_id,
+        user_nickname= review.writer.nick_name,
+        user_profile= review.writer.profile_image,
+        ps_id= review.ps_id,
+        name= review.studio.ps_name,
+    )
