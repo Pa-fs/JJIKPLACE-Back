@@ -27,7 +27,7 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key= config("JWT_SECRET_KEY"))
 
 app.include_router(cluster.router, prefix="/cluster", tags=["지도 클러스터링 API"])
-app.include_router(studios.router, tags=["지도 클러스터링 API"])
+app.include_router(studios.router, tags=["셀프사진관 API"])
 app.include_router(sns_auth.router, tags=["로그인 API"])
 app.include_router(form_auth.router, tags=["로그인 API"])
 app.include_router(form_signup.router, tags=["회원가입 API"])

@@ -1,12 +1,12 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends
 from fastapi.params import Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dto.response.StudioResponseSchemas import NearbyScrollResponse
-from app.services import nearby_service
+from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio
+from app.services import nearby_service, studio_service
 
 router = APIRouter()
 
@@ -37,3 +37,18 @@ def get_nearby_studios(
         "limit": limit,
         "has_more": offset + len(items) < total
     }
+
+
+@router.get(
+    "/studios/ranking",
+    response_model=List[RankedStudio],
+    summary="인기 매장 랭킹",
+    description="최근 '몇 일' 동안의 리뷰를 대상으로 가중평균 계산"
+)
+def studio_ranking(
+        db: Session = Depends(get_db),
+        days: int = Query(7, ge=1, le=30),
+        m: int = Query(5, ge=1, description="신뢰할 최소 리뷰 수"),
+        limit: int = Query(10, ge=1, le=50)
+):
+    return studio_service.get_studio_ranking(db, days, m, limit)
