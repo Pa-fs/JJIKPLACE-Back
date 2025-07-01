@@ -30,7 +30,7 @@ def update_profile_image(db: Session, user, file = UploadFile):
         raise HTTPException(status_code=500, detail="이미지 업로드 실패: " + str(e))
 
     # DB에 저장
-    db_user = db.query(User).filter(User.email == user["email"]).first()
+    db_user = db.query(User).filter(User.email == user.email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
 
