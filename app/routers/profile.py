@@ -15,12 +15,8 @@ router = APIRouter()
             summary="프로필 정보 반환",
             description="이메일, 닉네임, 프로필 이미지 반환",
             dependencies=[Security(bearer_scheme)])
-def my_profile(user= Depends(get_current_user)):
-    return {"message": "인증 성공", "user": {
-        "email": user["email"],
-        "nickname": user["nick_name"],
-        "profile_image": user.get("profile_image")
-    }}
+def my_profile(db: Session = Depends(get_db), user= Depends(get_current_user)):
+    return profile_service.get_current_profile_me(db, user)
 
 @router.patch("/profile/image",
               summary="프로필이미지 수정",

@@ -127,3 +127,16 @@ def delete_my_review(review_id, db, user_info):
     db.commit()
 
     return
+
+
+def get_current_profile_me(db, user_info):
+    user = verify_user(db, user_info)
+
+    return {"message": "인증 성공", "user": {
+        "email": user.email,
+        "nickname": user.nick_name,
+        "profile_image": (
+            get_full_azure_url(user.profile_image)
+            if user.profile_image else None
+        )
+    }}
