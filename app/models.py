@@ -23,7 +23,7 @@ class PhotoStudio(Base):
     lng = Column(String(100))
     created_at = Column(DateTime, default=kst_now)
     updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
-    thumbnail_url = Column(String(255))
+    thumbnail_url = Column(Text)
     kakao_id = Column(String(50), unique=True)
     homepage_url = Column(String(255))
     sido = Column(String(150))
@@ -33,6 +33,8 @@ class PhotoStudio(Base):
     reviews = relationship("Review", back_populates="studio")
 
     categories = relationship("PhotoStudioCategory", back_populates="studio")
+
+    images = relationship("PhotoStudioImage", back_populates="studio", cascade="all, delete-orphan")
 
 class Review(Base):
     __tablename__ = "review"
@@ -86,3 +88,16 @@ class PhotoStudioCategory(Base):
 
     category = relationship("Category", back_populates="studio")
     studio = relationship("PhotoStudio", back_populates="categories")
+
+
+class PhotoStudioImage(Base):
+    __tablename__ = "photo_studio_images"
+
+    psi_id       = Column(BigInteger, primary_key=True, autoincrement=True)
+    ps_id        = Column(BigInteger, ForeignKey("photo_studios.ps_id"), nullable=False, index=True)
+    ps_image     = Column(Text)
+    description  = Column(Text, nullable=True)
+    created_at   = Column(DateTime, default=kst_now)
+    updated_at   = Column(DateTime, default=kst_now, onupdate=kst_now)
+
+    studio = relationship("PhotoStudio", back_populates="images")

@@ -1,11 +1,13 @@
 from typing import Optional, List
 
-from fastapi import APIRouter, Depends
-from fastapi.params import Query
+from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi.params import Query, Security
 from sqlalchemy.orm import Session
 
+from app.auth.jwt import bearer_scheme, get_current_user
 from app.database import get_db
 from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio
+from app.models import User
 from app.services import nearby_service, studio_service
 
 router = APIRouter()
@@ -52,3 +54,32 @@ def studio_ranking(
         limit: int = Query(10, ge=1, le=50)
 ):
     return studio_service.get_studio_ranking(db, days, m, limit)
+
+
+@router.post(
+    "/studios/{ps_id}/images",
+    summary="사진관 이미지 여러 개 업로드",
+    description="여러 이미지 파일을 업로드하고 각 URL을 반환",
+    dependencies=[Security(bearer_scheme)]
+)
+def upload_studio_images(
+        ps_id: int,
+        files: List[UploadFile] = File(...),
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_user)
+):
+    return studio_service.add_studio_images(db, ps_id, files, user)
+
+@router.post(
+    "/studios/{ps_id}/thumbnail",
+    summary="사진관 썸네일 업로드/수정",
+    description="단일 이미지 파일을 업로드해서 사진관 썸네일을 등록/수정함",
+    dependencies=[Security(bearer_scheme)]
+)
+def upload_studio_thumbnail(
+        ps_id: int,
+        file: UploadFile = File(...),
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_user)
+):
+    return studio_service.add_studio_thumbnail(db, ps_id, file, user)
