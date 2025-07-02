@@ -1,3 +1,6 @@
+from dataclasses import field
+from pydoc import describe
+
 from pydantic import BaseModel, Field
 from typing_extensions import Optional
 
@@ -32,3 +35,9 @@ class RankedStudio(BaseModel):
 
     class Config:
         orm_mode = True
+
+class PhotoStudioDetail(BaseModel):
+    ps_id: int = Field(..., description="매장 ID")
+    name: str = Field(..., description="매장 이름")
+    avg_rating: float = Field(..., description="평균 리뷰 평점")
+    review_count: int = Field(..., description="리뷰 개수")

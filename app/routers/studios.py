@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.auth.jwt import bearer_scheme, get_current_user
 from app.database import get_db
-from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio
-from app.models import User
+from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio, PhotoStudioDetail
+from app.models import User, PhotoStudio
 from app.services import nearby_service, studio_service
 
 router = APIRouter()
@@ -97,3 +97,15 @@ def upload_studio_thumbnail(
         user: User = Depends(get_current_user)
 ):
     return studio_service.add_studio_thumbnail(db, ps_id, file, user)
+
+@router.get("/studios/{ps_id}",
+            response_model=PhotoStudioDetail,
+            summary="매장 상세",
+            description="""
+                매장 상세 페이지
+            """)
+def studio_detail(
+        ps_id: int,
+        db: Session = Depends(get_db)
+):
+    return studio_service.get_studio_detail(db, ps_id)

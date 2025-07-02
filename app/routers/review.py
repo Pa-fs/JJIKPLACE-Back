@@ -13,7 +13,7 @@ from app.services import review_service
 router = APIRouter()
 cookie_scheme = APIKeyCookie(name="access_token")
 
-@router.get("/studio/{ps_id}/reviews",
+@router.get("/studios/{ps_id}/reviews",
             response_model=ReviewScrollResponse,
             summary="특정 매장에 대한 리뷰 상세 목록",
             description="""

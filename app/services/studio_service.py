@@ -5,7 +5,7 @@ from fastapi import UploadFile, HTTPException
 from sqlalchemy import func, literal
 from sqlalchemy.orm import Session
 
-from app.dto.response.StudioResponseSchemas import RankedStudio
+from app.dto.response.StudioResponseSchemas import RankedStudio, PhotoStudioDetail
 from app.models import kst_now, Review, PhotoStudio, PhotoStudioImage, User
 from app.util.azure_upload import validate_image_upload, upload_file_to_azure, get_full_azure_url
 
@@ -131,3 +131,17 @@ def add_studio_thumbnail(db: Session, ps_id: int, file: UploadFile, user_info):
         "message": "썸네일이 업데이트 되었습니다.",
         "thumbnail_url": full_url
     }
+
+
+def get_studio_detail(db, ps_id):
+    studio = verify_studio(db, ps_id)
+
+    avg_rating = db.query(func.avg(Review.rating)).filter(Review.ps_id == ps_id).scalar()
+    review_count = db.query(func.count(Review.review_id)).filter(Review.ps_id == ps_id).scalar()
+
+    return PhotoStudioDetail(
+        ps_id=studio.ps_id,
+        name=studio.ps_name,
+        avg_rating=round(avg_rating, 1),
+        review_count=review_count
+    )
