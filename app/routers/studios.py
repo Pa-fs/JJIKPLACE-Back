@@ -59,7 +59,14 @@ def studio_ranking(
 @router.post(
     "/studios/{ps_id}/images",
     summary="사진관 이미지 여러 개 업로드",
-    description="여러 이미지 파일을 업로드하고 각 URL을 반환",
+    description="""
+                여러 이미지 파일을 업로드하고 각 URL을 반환 \n
+                
+                test96@naver.com 아이디로 로그인해야 이미지 업로드 가능
+                이외의 아이디는 권한 없음
+                
+                구축 계획 상 관리자 페이지가 없기 때문에 따로 API 호출할 곳을 만드셔야 합니다.
+                """,
     dependencies=[Security(bearer_scheme)]
 )
 def upload_studio_images(
@@ -73,7 +80,14 @@ def upload_studio_images(
 @router.post(
     "/studios/{ps_id}/thumbnail",
     summary="사진관 썸네일 업로드/수정",
-    description="단일 이미지 파일을 업로드해서 사진관 썸네일을 등록/수정함",
+    description="""
+                단일 이미지 파일을 업로드해서 사진관 썸네일을 등록/수정함 \n
+                
+                test96@naver.com 아이디로 로그인해야 이미지 업로드 가능
+                이외의 아이디는 권한 없음
+                
+                구축 계획 상 관리자 페이지가 없기 때문에 따로 API 호출할 곳을 만드셔야 합니다.
+                """,
     dependencies=[Security(bearer_scheme)]
 )
 def upload_studio_thumbnail(
