@@ -1,6 +1,8 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.util.azure_upload import get_full_azure_url
+
 
 def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: int, category: str = None):
     # 거리 계산: Haversine Formula (km 단위)
@@ -20,7 +22,8 @@ def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: 
               + sin(radians(:lat)) * sin(radians(CAST(ps.lat AS DOUBLE)))
             ),
             2
-        ) AS distance_km
+        ) AS distance_km,
+        ps.thumbnail_url
     FROM photo_studios ps
     LEFT JOIN review r ON ps.ps_id = r.ps_id
     {category_join}
@@ -74,4 +77,17 @@ def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: 
     result = db.execute(text(sql), params).mappings().all()
     total = db.execute(text(count_sql), params).scalar()
 
-    return result, total
+    final_result = []
+
+    for row in result:
+        row_dict = dict(row)  # RowMapping → dict로 변환
+        thumbnail = row_dict.get("thumbnail_url")
+
+        if thumbnail:
+            row_dict["thumbnail_url"] = get_full_azure_url(thumbnail)
+        else:
+            row_dict["thumbnail_url"] = None
+
+        final_result.append(row_dict)
+
+    return final_result, total

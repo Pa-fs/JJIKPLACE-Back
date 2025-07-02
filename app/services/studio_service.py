@@ -53,6 +53,7 @@ def get_studio_ranking(db, days, m, limit):
         db.query(
             PhotoStudio.ps_id,
             PhotoStudio.ps_name,
+            PhotoStudio.thumbnail_url,
             subq.c.R,
             subq.c.v,
             wr_expr
@@ -74,7 +75,7 @@ def get_studio_ranking(db, days, m, limit):
             avg_rating= round(s.R, 2),
             review_cnt= int(s.v),
             weighted_rating= round(s.wr, 3),
-            image_url= None
+            thumbnail_url= get_full_azure_url(s.thumbnail_url) if s.thumbnail_url else None
         )
     )
 

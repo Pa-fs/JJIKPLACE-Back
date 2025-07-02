@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
+
 
 class ClusterItem(BaseModel):
     name: str = Field(..., description="클러스터 이름 (예: 서울 강남구)")
@@ -20,6 +21,7 @@ class MarkerItem(BaseModel):
     road_addr: str = Field(..., description="도로명 주소")
     review_avg_score: float = Field(..., description="리뷰 평점")
     review_cnt: int = Field(..., description="리뷰 개수")
+    thumbnail_url: Optional[str] = Field(..., description="대표 썸네일")
 
 class MarkerResponse(BaseModel):
     level: str = Field(default="marker", description="클러스터링 레벨")

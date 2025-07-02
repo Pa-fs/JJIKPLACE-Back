@@ -11,6 +11,7 @@ class NearbyStudioItem(BaseModel):
     review_avg_score: float = Field(..., description="리뷰 평균 평점")
     review_cnt: int = Field(..., description="리뷰 총 수")
     distance_km: float = Field(..., description="거리 (km)")
+    thumbnail_url: Optional[str] = Field(..., description="대표 썸네일")
 
 class NearbyScrollResponse(BaseModel):
     items: list[NearbyStudioItem] = Field(..., description="가까운 거리 목록")
@@ -26,7 +27,7 @@ class RankedStudio(BaseModel):
     avg_rating: float = Field(..., description="평균 리뷰 평점")
     review_cnt: int = Field(..., description="리뷰 개수")
     weighted_rating: float = Field(..., description="가중평균 점수")
-    image_url: Optional[str] = Field(..., description="매장 대표 이미지")
+    thumbnail_url: Optional[str] = Field(..., description="매장 대표 썸네일")
     rank: int = Field(..., description="매장 랭킹")
 
     class Config:
