@@ -1,5 +1,4 @@
-from dataclasses import field
-from pydoc import describe
+from typing import List
 
 from pydantic import BaseModel, Field
 from typing_extensions import Optional
@@ -41,3 +40,15 @@ class PhotoStudioDetail(BaseModel):
     name: str = Field(..., description="매장 이름")
     avg_rating: float = Field(..., description="평균 리뷰 평점")
     review_count: int = Field(..., description="리뷰 개수")
+
+
+class PhotoStudioImageResponse(BaseModel):
+    psi_id: int = Field(..., description="매장 이미지 ID")
+    studio_image: Optional[str] = Field(..., description="매장 이미지")
+    description: Optional[str] = Field(..., description="(옵션) 이미지 설명")
+
+class PhotoStudioGalleryPage(BaseModel):
+    page: int = Field(..., description="현재 페이지")
+    size: int = Field(..., description="한 번 호출 시 불러올 최대 개수")
+    has_more: bool = Field(..., description="마지막 페이지 확인 변수")
+    images: List[PhotoStudioImageResponse]

@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.auth.jwt import bearer_scheme, get_current_user
 from app.database import get_db
-from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio, PhotoStudioDetail
+from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio, PhotoStudioDetail, \
+    PhotoStudioGalleryPage
 from app.models import User, PhotoStudio
 from app.services import nearby_service, studio_service
 
@@ -109,3 +110,25 @@ def studio_detail(
         db: Session = Depends(get_db)
 ):
     return studio_service.get_studio_detail(db, ps_id)
+
+@router.get(
+    "/studios/{ps_id}/images",
+    response_model=PhotoStudioGalleryPage,
+    summary="사진관 갤러리",
+    description="""
+        page, size 파라미터로 9개씩 이미지를 반환
+    """
+)
+def studio_gallery(
+    ps_id: int,
+    page: int = Query(1, ge=1, description="페이지 번호 1부터"),
+    size: int = Query(9, ge=1, le=50, description="한 페이지당 이미지 수"),
+    db: Session = Depends(get_db)
+):
+    images, has_more = studio_service.get_studio_gallery_page(db, ps_id, page, size)
+    return PhotoStudioGalleryPage(
+        page=page,
+        size=size,
+        has_more=has_more,
+        images=images
+    )
