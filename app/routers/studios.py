@@ -32,13 +32,13 @@ def get_nearby_studios(
         limit: int = Query(3, ge=3, le=1000, description="스크롤 당 항목 요청 개수"),
         category: Optional[str] = Query(None, description="필터할 카테고리 이름 (예: 복고)")
 ):
-    items, total = nearby_service.get_nearby_studios(db, lat, lng, offset, limit, category)
+    items, total, has_more = nearby_service.get_nearby_studios(db, lat, lng, offset, limit, category)
     return {
         "items": items,
         "total": total,
         "offset": offset,
         "limit": limit,
-        "has_more": offset + len(items) < total
+        "has_more": has_more
     }
 
 

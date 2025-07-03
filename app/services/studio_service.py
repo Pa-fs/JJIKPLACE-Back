@@ -136,14 +136,17 @@ def add_studio_thumbnail(db: Session, ps_id: int, file: UploadFile, user_info):
 def get_studio_detail(db, ps_id):
     studio = verify_studio(db, ps_id)
 
-    avg_rating = db.query(func.avg(Review.rating)).filter(Review.ps_id == ps_id).scalar()
+    avg_rating = db.query(func.avg(Review.rating)).filter(Review.ps_id == ps_id).scalar() or 0.0
     review_count = db.query(func.count(Review.review_id)).filter(Review.ps_id == ps_id).scalar()
+
+    tags = [f"#{pc.category.name}" for pc in studio.categories]
 
     return PhotoStudioDetail(
         ps_id=studio.ps_id,
         name=studio.ps_name,
         avg_rating=round(avg_rating, 1),
-        review_count=review_count
+        review_count=review_count,
+        categories=tags
     )
 
 

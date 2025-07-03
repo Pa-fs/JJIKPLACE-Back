@@ -14,6 +14,7 @@ class NearbyStudioItem(BaseModel):
     review_cnt: int = Field(..., description="리뷰 총 수")
     distance_km: float = Field(..., description="거리 (km)")
     thumbnail_url: Optional[str] = Field(..., description="대표 썸네일")
+    categories: List[str] = Field(..., description="카테고리 해시태그 목록")
 
 class NearbyScrollResponse(BaseModel):
     items: list[NearbyStudioItem] = Field(..., description="가까운 거리 목록")
@@ -40,7 +41,10 @@ class PhotoStudioDetail(BaseModel):
     name: str = Field(..., description="매장 이름")
     avg_rating: float = Field(..., description="평균 리뷰 평점")
     review_count: int = Field(..., description="리뷰 개수")
+    categories: List[str] = Field(..., description="카테고리 해시태그 목록")
 
+    class Config:
+        from_attributes = True
 
 class PhotoStudioImageResponse(BaseModel):
     psi_id: int = Field(..., description="매장 이미지 ID")
