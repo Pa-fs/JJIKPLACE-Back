@@ -89,9 +89,9 @@ def update_nickname(
 @router.post("/profile/me/password/verify",
              summary="현재 비밀번호 확인",
              description="""
-                현재 비밀번호 변경 \n
+                현재 비밀번호 확인 API \n
                 성공 시 서버 내에서 5분 동안 시간 체크함
-                시간 초과 시 비밀번호 변경 API 사용 불가, 재확인 필요
+                시간 초과 시 비밀번호 변경 API 사용 불가, 재확인 필요(이 API 재인증 필요)
              """)
 def verify_current_password(
     current_password: str,
