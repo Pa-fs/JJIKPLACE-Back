@@ -1,9 +1,12 @@
+from zoneinfo import ZoneInfo
+
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
+from app.auth.hash import verify_password, hash_password
 from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
-from app.models import User, Review
+from app.models import User, Review, kst_now
 from app.util.azure_upload import get_full_azure_url, validate_image_upload, upload_file_to_azure
 
 def verify_user(db, user_info):
@@ -163,3 +166,53 @@ def update_profile_nickname(payload, db, user_info):
     db.commit()
 
     return {"message": "닉네임이 성공적으로 변경되었습니다."}
+
+
+def verify_current_password(current_password, db, user_info):
+    user = verify_user(db, user_info)
+
+    if not verify_password(current_password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="현재 비밀번호가 일치하지 않습니다."
+        )
+
+    user.recent_password_verified_at = kst_now()
+    now = kst_now()
+    print(now.tzinfo)
+    db.commit()
+
+    return {"message": "비밀번호가 확인되었습니다."}
+
+
+def change_password(payload, db, user_info):
+    user = verify_user(db, user_info)
+
+    verified_at = user.recent_password_verified_at
+    if not verified_at:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="최근 비밀번호 인증이 필요합니다."
+        )
+
+    # tzInfo가 없으면 직접 보정
+    if verified_at.tzinfo is None:
+        verified_at = verified_at.replace(tzinfo=ZoneInfo("Asia/Seoul"))
+
+    if (kst_now() - verified_at).total_seconds() > 300:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="최근 비밀번호 인증이 필요합니다."
+        )
+
+    if payload.new_password != payload.new_password_check:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="새 비밀번호와 확인이 일치하지 않습니다."
+        )
+
+    user.password = hash_password(payload.new_password)
+    user.recent_password_verified_at = None # 인증 후 시간 초기화
+    db.commit()
+
+    return {"message": "비밀번호가 성공적으로 변경되었습니다."}

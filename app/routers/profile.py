@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.jwt import get_current_user, bearer_scheme
 from app.database import get_db
-from app.dto.request.ProfileRequestSchema import NicknameUpdateRequest
+from app.dto.request.ProfileRequestSchema import NicknameUpdateRequest, PasswordChangeRequest
 from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
 from app.services import profile_service
 
@@ -85,3 +85,32 @@ def update_nickname(
         user_info: dict = Depends(get_current_user),
 ):
     return profile_service.update_profile_nickname(payload, db, user_info)
+
+@router.post("/profile/me/password/verify",
+             summary="현재 비밀번호 확인",
+             description="""
+                현재 비밀번호 변경 \n
+                성공 시 서버 내에서 5분 동안 시간 체크함
+                시간 초과 시 비밀번호 변경 API 사용 불가, 재확인 필요
+             """)
+def verify_current_password(
+    current_password: str,
+    db: Session = Depends(get_db),
+    user_info: dict = Depends(get_current_user)
+):
+    return profile_service.verify_current_password(current_password, db, user_info)
+
+@router.patch("/profile/me/password",
+              summary="새 비밀번호 변경",
+              description="""
+              새 비밀번호 변경 \n
+              우선
+              1. 현재 비밀번호 확인 API 정상응답이 반드시 필요함
+              2. 1번 성공 시 이 API를 사용하기 위한 5분이 주어짐, 지나면 401에러
+              """)
+def change_password(
+        payload: PasswordChangeRequest,
+        db: Session = Depends(get_db),
+        user_info: dict = Depends(get_current_user)
+):
+    return profile_service.change_password(payload, db, user_info)

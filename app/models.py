@@ -64,6 +64,7 @@ class User(Base):
     connected_sns = Column(String(10))
     created_at = Column(DateTime, default=kst_now)
     updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
+    recent_password_verified_at = Column(DateTime(timezone=True), default=kst_now)
 
     reviews = relationship("Review", back_populates="writer")
 
