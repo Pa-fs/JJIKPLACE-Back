@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.jwt import get_current_user, bearer_scheme
 from app.database import get_db
+from app.dto.request.ProfileRequestSchema import NicknameUpdateRequest
 from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
 from app.services import profile_service
 
@@ -69,3 +70,18 @@ def delete_my_review(
         user_info: dict = Depends(get_current_user)
 ):
     return profile_service.delete_my_review(review_id, db, user_info)
+
+
+@router.patch("/profile/me/nickname",
+              summary="닉네임 변경",
+              description="""
+                최소 2자 ~ 최대 10자, 한글 기준 \n
+                닉네임 중복 불가, 중복 시 409 Conflict 에러코드 반환
+              """,
+              dependencies=[Security(bearer_scheme)])
+def update_nickname(
+        payload: NicknameUpdateRequest,
+        db: Session = Depends(get_db),
+        user_info: dict = Depends(get_current_user),
+):
+    return profile_service.update_profile_nickname(payload, db, user_info)

@@ -1,4 +1,4 @@
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
@@ -140,3 +140,26 @@ def get_current_profile_me(db, user_info):
             if user.profile_image else None
         )
     }}
+
+
+def update_profile_nickname(payload, db, user_info):
+    user = verify_user(db, user_info)
+
+    new_nickname = payload.nickname
+
+    exists = (
+        db.query(User)
+        .filter(user.nick_name == new_nickname, User.user_id != user.user_id)
+        .first()
+    )
+
+    if exists:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 사용 중인 닉네임입니다."
+        )
+
+    user.nick_name = new_nickname
+    db.commit()
+
+    return {"message": "닉네임이 성공적으로 변경되었습니다."}
