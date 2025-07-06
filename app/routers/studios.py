@@ -46,7 +46,10 @@ def get_nearby_studios(
     "/studios/ranking",
     response_model=List[RankedStudio],
     summary="인기 매장 랭킹",
-    description="최근 '몇 일' 동안의 리뷰를 대상으로 가중평균 계산"
+    description="""
+        최근 '몇 일' 동안의 리뷰를 대상으로 가중평균 계산 \n
+        이 API 호출할 때마다 이 데이터 기준으로 '#인기' 카테고리가 바뀜
+    """
 )
 def studio_ranking(
         db: Session = Depends(get_db),

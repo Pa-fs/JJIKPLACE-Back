@@ -6,7 +6,7 @@ from sqlalchemy import func, literal
 from sqlalchemy.orm import Session
 
 from app.dto.response.StudioResponseSchemas import RankedStudio, PhotoStudioDetail, PhotoStudioImageResponse
-from app.models import kst_now, Review, PhotoStudio, PhotoStudioImage, User
+from app.models import kst_now, Review, PhotoStudio, PhotoStudioImage, User, PhotoStudioCategory
 from app.util.azure_upload import validate_image_upload, upload_file_to_azure, get_full_azure_url
 
 def is_admin(db, user_info):
@@ -16,6 +16,9 @@ def is_admin(db, user_info):
         raise HTTPException(400, "해당 권한이 없습니다.")
 
 def get_studio_ranking(db, days, m, limit):
+
+    POPULAR_CATEGORY_ID = 6
+
     """
     WR = (v / (v + m)) * R + (m / (v + m)) * C
         R : 스튜디오 평균 평점
@@ -64,6 +67,21 @@ def get_studio_ranking(db, days, m, limit):
         .limit(limit)
         .all()
     )
+
+    # 기존 인기태그 삭제 및 재등록
+    db.query(PhotoStudioCategory) \
+    .filter(PhotoStudioCategory.category_id == POPULAR_CATEGORY_ID) \
+    .delete(synchronize_session=False)
+
+    for s in studios:
+        db.add(
+            PhotoStudioCategory(
+                ps_id=s.ps_id,
+                category_id=POPULAR_CATEGORY_ID
+            )
+        )
+    db.commit()
+
 
     result: list[RankedStudio] = []
     for idx, s in enumerate(studios, start= 1):
