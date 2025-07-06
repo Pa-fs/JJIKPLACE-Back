@@ -1,6 +1,6 @@
-import datetime
+from hashlib import sha256
 
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 
@@ -9,7 +9,7 @@ from app.models import Review, User
 from app.util.azure_upload import upload_file_to_azure, get_full_azure_url, validate_image_upload
 
 
-def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, limit: int):
+def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, limit: int, req, res):
     try:
         sql = text("""
         SELECT
@@ -36,12 +36,37 @@ def get_review_details_in_photo_studio(db: Session, ps_id: int, offset: int, lim
         total = db.execute(count_sql, {"ps_id": ps_id}).scalar()
 
         items = []
+        latest_ts = None
+
         # 이미지 URL에 전체 경로 붙이기
         for row in result:
             row_dict = dict(row)
             if row_dict["image_url"]:
                 row_dict["image_url"] = get_full_azure_url(row_dict["image_url"])
             items.append(row_dict)
+
+            # 가장 최신 created_at 뽑기
+            ts = row_dict["created_at"]
+            if latest_ts is None or ts > latest_ts:
+                latest_ts = ts
+
+        # ETag 계산 : total, offset, limit, latest_ts 조합
+        tag_base = f"{total}-{offset}-{limit}-{latest_ts}"
+        etag = sha256(tag_base.encode("utf-8")).hexdigest()
+
+        # 클라 If-None-Match 검증
+        inm = req.headers.get("if-none-match")
+        if inm and inm == etag:
+            res.status_code = status.HTTP_304_NOT_MODIFIED
+            return
+
+        # 캐시 헤더 세팅
+        res.headers["ETag"] = etag
+        # (선택) Last-Modified 헤더: 최신 리뷰 일시
+        if latest_ts:
+            # RFC1123 형식
+            lm = latest_ts.strftime("%a, %d %b %Y %H:%M:%S GMT")
+            res.headers["Last-Modified"] = lm
 
         return {
             "items": items,

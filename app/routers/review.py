@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import APIRouter, Path, Depends, UploadFile, File, Security
+from fastapi import APIRouter, Path, Depends, UploadFile, File, Security, Request, Response
 from fastapi.params import Query
 from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
@@ -23,14 +23,25 @@ cookie_scheme = APIKeyCookie(name="access_token")
                 limit 값 더 해가며 호출하면 됨
                 
                 has_more가 끝지점인지 판단하는 변수
+                
+                # ETag 추가 (캐시 활용), 변경 없으면 304 Not Modified 반환, 있으면 새로운 값 응답
+                서버 응답
+                ETag: "26f99042bc7930933af17f90f0ec150a277d7a37a29441793a93108e3f05a402"
+                Last-Modified: Thu, 26 Jun 2025 17:57:10 GMT (최신리뷰 기준 날짜)
+                
+                클라이언트 -> 서버 요청 시
+                If-None-Match: <Etag값>
+                If-Modified-Since: <Last-Modified 날짜값>
             """)
 def get_reviews_by_studio(
+        request: Request, # 클라이언트 헤더 읽기용
+        response: Response, # 응답 헤더 세팅용
         db: Session = Depends(get_db),
         ps_id: int = Path(..., description="매장 ID"),
         offset: int = Query(0, ge=0),
         limit: int = Query(4, ge=1, le=20),
 ):
-    return review_service.get_review_details_in_photo_studio(db, ps_id, offset, limit)
+    return review_service.get_review_details_in_photo_studio(db, ps_id, offset, limit, request, response)
 
 
 @router.post("/review",
