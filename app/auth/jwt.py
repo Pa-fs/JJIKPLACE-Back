@@ -14,12 +14,13 @@ ALGORITHM = "HS256"
 
 bearer_scheme = HTTPBearer(auto_error=True)
 
-def create_jwt_token(email: str, nickname: str, profile_image: str = None):
+def create_jwt_token(email: str, nickname: str, role: str, profile_image: str = None):
     payload = {
         # "sub": str(user_id),
         "email": email,
         "exp": datetime.datetime.utcnow() + timedelta(minutes=15),
-        "nick_name": nickname
+        "nick_name": nickname,
+        "role": role,
     }
 
     if profile_image:

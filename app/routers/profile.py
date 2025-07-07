@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get("/profile/me",
             summary="프로필 정보 반환",
-            description="이메일, 닉네임, 프로필 이미지 반환",
+            description="이메일, 닉네임, 권한, 프로필 이미지 반환",
             dependencies=[Security(bearer_scheme)])
 def my_profile(db: Session = Depends(get_db), user= Depends(get_current_user)):
     return profile_service.get_current_profile_me(db, user)

@@ -138,6 +138,7 @@ def get_current_profile_me(db, user_info):
     return {"message": "인증 성공", "user": {
         "email": user.email,
         "nickname": user.nick_name,
+        "role": user.role,
         "profile_image": (
             get_full_azure_url(user.profile_image)
             if user.profile_image else None

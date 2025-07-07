@@ -59,7 +59,7 @@ async def callback_via_kakao(request: Request, db: Session = Depends(get_db)):
 
     user = get_or_create_user(db, sns_type= "kakao", sns_id= kakao_id, sns_email= kakao_email)
 
-    access_token = create_jwt_token(user.user_id, user.email)
+    access_token = create_jwt_token(user.user_id, user.email, user.role)
 
     redirect_url = get_safe_redirect_url(request)
     return RedirectResponse(f"{redirect_url}/login/callback?token={access_token}")
@@ -109,6 +109,6 @@ async def callback_via_google(
 
     user = get_or_create_user(db, "google", google_id, google_email)
 
-    access_token = create_jwt_token(user.user_id, user.sns_email)
+    access_token = create_jwt_token(user.user_id, user.sns_email, user.role)
     redirect_url = get_safe_redirect_url(request)
     return RedirectResponse(f"{redirect_url}/login/callback?token={access_token}")

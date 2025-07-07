@@ -65,6 +65,7 @@ class User(Base):
     created_at = Column(DateTime, default=kst_now)
     updated_at = Column(DateTime, default=kst_now, onupdate=kst_now)
     recent_password_verified_at = Column(DateTime(timezone=True), default=kst_now)
+    role = Column(String(100), default="user") # admin or user
 
     reviews = relationship("Review", back_populates="writer")
 
