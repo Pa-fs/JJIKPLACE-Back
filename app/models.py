@@ -1,6 +1,6 @@
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import Column, String, BigInteger, Text, DateTime, Float, ForeignKey
+from sqlalchemy import Column, String, BigInteger, Text, DateTime, Float, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import datetime
@@ -36,6 +36,8 @@ class PhotoStudio(Base):
 
     images = relationship("PhotoStudioImage", back_populates="studio", cascade="all, delete-orphan")
 
+    favorites = relationship("FavoriteStudio", back_populates="studio", cascade="all, delete-orphan")
+
 class Review(Base):
     __tablename__ = "review"
     review_id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -68,6 +70,7 @@ class User(Base):
     role = Column(String(100), default="user") # admin or user
 
     reviews = relationship("Review", back_populates="writer")
+    favorites = relationship("FavoriteStudio", back_populates="user", cascade="all, delete-orphan")
 
 class Category(Base):
     __tablename__ = "category"
@@ -103,3 +106,18 @@ class PhotoStudioImage(Base):
     updated_at   = Column(DateTime, default=kst_now, onupdate=kst_now)
 
     studio = relationship("PhotoStudio", back_populates="images")
+
+class FavoriteStudio(Base):
+    __tablename__ = "favorite_studio"
+    fs_id      = Column(BigInteger, primary_key=True, autoincrement=True)
+    user_id    = Column(BigInteger, ForeignKey("user.user_id"), nullable=False)
+    ps_id      = Column(BigInteger, ForeignKey("photo_studios.ps_id"), nullable=False)
+    created_at = Column(DateTime, default=kst_now)
+
+    # 중복 찜 방지
+    __table_args__ = (
+        UniqueConstraint("user_id", "ps_id", name="uq_favorite_user_studio"),
+    )
+
+    user = relationship("User", back_populates="favorites")
+    studio = relationship("PhotoStudio", back_populates="favorites")

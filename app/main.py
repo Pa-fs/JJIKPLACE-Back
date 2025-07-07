@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import engine
 from app import models
-from app.routers import cluster, sns_auth, form_auth, review, studios, profile, form_signup
+from app.routers import cluster, sns_auth, form_auth, review, studios, profile, form_signup, favorite
 
 config = Config(".env")
 models.Base.metadata.create_all(bind=engine)
@@ -33,3 +33,4 @@ app.include_router(form_auth.router, tags=["로그인 API"])
 app.include_router(form_signup.router, tags=["회원가입 API"])
 app.include_router(profile.router, tags=["프로필 API"])
 app.include_router(review.router, tags=["리뷰 API"])
+app.include_router(favorite.router, tags=["찜하기 API"])
