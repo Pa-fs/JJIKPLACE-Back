@@ -22,6 +22,6 @@ def form_login(request: Request, form: FormLogin, db: Session = Depends(get_db))
     if not user or not verify_password(form.password, user.password):
         raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 일치하지 않습니다.")
 
-    access_token = create_jwt_token(user.email, user.nick_name, user.profile_image, user.role)
+    access_token = create_jwt_token(email=user.email, nickname=user.nick_name, profile_image=user.profile_image, role=user.role)
     # redirect_url = get_safe_redirect_url(request)
     return {"access_token": access_token, "token_type": "Bearer"}
