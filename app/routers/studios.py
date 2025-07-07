@@ -62,7 +62,7 @@ def studio_ranking(
 
 @router.post(
     "/studios/{ps_id}/images",
-    summary="사진관 이미지 여러 개 업로드",
+    summary="사진관 이미지 여러 개 업로드 (매장 이미지를 여러 개 업로드)",
     description="""
                 여러 이미지 파일을 업로드하고 각 URL을 반환 \n
                 
@@ -119,6 +119,7 @@ def studio_detail(
     response_model=PhotoStudioGalleryPage,
     summary="사진관 갤러리",
     description="""
+        매장에 대한 리뷰 사진 갤러리
         page, size 파라미터로 9개씩 이미지를 반환
     """
 )

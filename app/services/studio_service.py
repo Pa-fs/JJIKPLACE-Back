@@ -5,7 +5,7 @@ from fastapi import UploadFile, HTTPException, status
 from sqlalchemy import func, literal
 from sqlalchemy.orm import Session
 
-from app.dto.response.StudioResponseSchemas import RankedStudio, PhotoStudioDetail, PhotoStudioImageResponse
+from app.dto.response.StudioResponseSchemas import RankedStudio, PhotoStudioDetail, PhotoStudioReviewImageResponse
 from app.models import kst_now, Review, PhotoStudio, PhotoStudioImage, User, PhotoStudioCategory
 from app.util.azure_upload import validate_image_upload, upload_file_to_azure, get_full_azure_url
 
@@ -173,30 +173,56 @@ def get_studio_detail(db, ps_id):
 def get_studio_gallery_page(db, ps_id, page, size):
     verify_studio(db, ps_id)
 
-    total = db.query(func.count(PhotoStudioImage.psi_id)) \
-                .filter(PhotoStudioImage.ps_id == ps_id) \
-                .scalar() or 0
+    # total = db.query(func.count(PhotoStudioImage.psi_id)) \
+    #             .filter(PhotoStudioImage.ps_id == ps_id) \
+    #             .scalar() or 0
+
+    total = (
+        db.query(func.count(Review.review_id))
+        .filter(Review.ps_id == ps_id)
+        .filter(Review.image_url != None)
+        .scalar()
+    ) or 0
 
     offset = (page - 1) * size
 
-    images = (
-        db.query(PhotoStudioImage)
-        .filter(PhotoStudioImage.ps_id == ps_id)
-        .order_by(PhotoStudioImage.psi_id)
+    # images = (
+    #     db.query(PhotoStudioImage)
+    #     .filter(PhotoStudioImage.ps_id == ps_id)
+    #     .order_by(PhotoStudioImage.psi_id)
+    #     .offset(offset)
+    #     .limit(size)
+    #     .all()
+    # )
+
+    reviews = (
+        db.query(Review.review_id, Review.image_url)
+        .filter(Review.ps_id == ps_id)
+        .filter(Review.image_url != None)
+        .order_by(Review.created_at.desc())
         .offset(offset)
         .limit(size)
         .all()
     )
 
-    dto_list = [
-        PhotoStudioImageResponse(
-            psi_id = img.psi_id,
-            studio_image = get_full_azure_url(img.ps_image) if img.ps_image else None,
-            description = img.description
-        )
-        for img in images
-    ]
+    # dto_list = [
+    #     PhotoStudioImageResponse(
+    #         psi_id = img.psi_id,
+    #         studio_image = get_full_azure_url(img.ps_image) if img.ps_image else None,
+    #         description = img.description
+    #     )
+    #     for img in images
+    # ]
 
-    has_more = (offset + len(images)) < total
+    dto_list = []
+    for review_id, filename in reviews:
+        dto_list.append(
+            PhotoStudioReviewImageResponse(
+                review_id=review_id,
+                review_image=get_full_azure_url(filename),
+            )
+        )
+
+    has_more = (offset + len(dto_list)) < total
 
     return dto_list, has_more

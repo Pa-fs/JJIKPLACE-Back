@@ -46,13 +46,12 @@ class PhotoStudioDetail(BaseModel):
     class Config:
         from_attributes = True
 
-class PhotoStudioImageResponse(BaseModel):
-    psi_id: int = Field(..., description="매장 이미지 ID")
-    studio_image: Optional[str] = Field(..., description="매장 이미지")
-    description: Optional[str] = Field(..., description="(옵션) 이미지 설명")
+class PhotoStudioReviewImageResponse(BaseModel):
+    review_id: int = Field(..., description="매장 이미지 ID")
+    review_image: Optional[str] = Field(..., description="매장 이미지")
 
 class PhotoStudioGalleryPage(BaseModel):
     page: int = Field(..., description="현재 페이지")
     size: int = Field(..., description="한 번 호출 시 불러올 최대 개수")
     has_more: bool = Field(..., description="마지막 페이지 확인 변수")
-    images: List[PhotoStudioImageResponse]
+    images: List[PhotoStudioReviewImageResponse]
