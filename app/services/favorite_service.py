@@ -1,4 +1,6 @@
 from fastapi import HTTPException, status
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from app.dto.response.FavoriteResponseSchemas import FavoriteStudioResponse
 from app.models import PhotoStudio, FavoriteStudio
@@ -6,29 +8,47 @@ from app.services.profile_service import verify_user
 from app.util.azure_upload import get_full_azure_url
 
 
-def list_favorites(db, user_info):
+
+def list_favorites_paginated(db: Session, user_info: dict, offset: int, size: int):
     user = verify_user(db, user_info)
 
-    rows = db.query(
-        PhotoStudio.ps_id,
-        PhotoStudio.ps_name,
-        PhotoStudio.thumbnail_url,
-        PhotoStudio.road_addr,
-        FavoriteStudio.created_at.label("created_at"),
-    ).join(FavoriteStudio, FavoriteStudio.ps_id == PhotoStudio.ps_id
-    ).filter(FavoriteStudio.user_id == user.user_id
-    ).order_by(FavoriteStudio.created_at.desc()
-    ).all()
+    total = (
+        db.query(func.count(FavoriteStudio.fs_id))
+          .filter(FavoriteStudio.user_id == user.user_id)
+          .scalar()
+    ) or 0
 
-    return [
-        FavoriteStudioResponse(
-            ps_id=r.ps_id,
-            name=r.ps_name,
-            thumbnail_url=get_full_azure_url(r.thumbnail_url) if r.thumbnail_url else None,
-            road_addr=r.road_addr,
-            created_at=r.created_at
-        ) for r in rows
-    ]
+    rows = (
+        db.query(
+            PhotoStudio.ps_id,
+            PhotoStudio.ps_name,
+            PhotoStudio.thumbnail_url,
+            PhotoStudio.road_addr,
+            FavoriteStudio.created_at.label("created_at"),
+        )
+        .join(FavoriteStudio, FavoriteStudio.ps_id == PhotoStudio.ps_id)
+        .filter(FavoriteStudio.user_id == user.user_id)
+        .order_by(FavoriteStudio.created_at.desc())
+        .offset(offset)
+        .limit(size)
+        .all()
+    )
+
+    items = []
+    for ps_id, name, thumb, road_addr, created_at in rows:
+        items.append(
+            FavoriteStudioResponse(
+                ps_id=ps_id,
+                name=name,
+                thumbnail_url=get_full_azure_url(thumb) if thumb else None,
+                road_addr=road_addr,
+                created_at=created_at,
+            )
+        )
+
+    has_more = (offset + len(items)) < total
+
+    return items, total, has_more
 
 
 def add_favorite(ps_id, db, user_info):

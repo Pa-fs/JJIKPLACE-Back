@@ -7,8 +7,9 @@ from sqlalchemy.orm import Session
 from app.auth.jwt import get_current_user, bearer_scheme
 from app.database import get_db
 from app.dto.request.ProfileRequestSchema import NicknameUpdateRequest, PasswordChangeRequest
+from app.dto.response.FavoriteResponseSchemas import FavoritePage
 from app.dto.response.ReviewResponseSchemas import MyReviewResponse, ReviewPage
-from app.services import profile_service
+from app.services import profile_service, favorite_service
 
 router = APIRouter()
 
@@ -114,3 +115,21 @@ def change_password(
         user_info: dict = Depends(get_current_user)
 ):
     return profile_service.change_password(payload, db, user_info)
+
+@router.get("/profile/my-favorites",
+            summary="내가 찜한 매장 목록",
+            response_model=FavoritePage)
+def list_favorites(
+    offset: int = Query(0, ge=0, description="시작 오프셋"),
+    size: int = Query(5, ge=1, le=100, description="한 번에 불러올 개수"),
+    db: Session = Depends(get_db),
+    user_info: dict = Depends(get_current_user),
+):
+    items, total, has_more = favorite_service.list_favorites_paginated(db, user_info, offset, size)
+    return FavoritePage(
+        items=items,
+        total=total,
+        offset=offset,
+        size=size,
+        has_more=has_more
+    )
