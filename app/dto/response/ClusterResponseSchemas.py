@@ -23,6 +23,7 @@ class MarkerItem(BaseModel):
     review_cnt: int = Field(..., description="리뷰 개수")
     thumbnail_url: Optional[str] = Field(..., description="대표 썸네일")
     categories: List[str] = Field(..., description="카테고리 해시태그 목록")
+    is_favorite: bool = Field(..., description="내 찜 여부")
 
 class MarkerResponse(BaseModel):
     level: str = Field(default="marker", description="클러스터링 레벨")

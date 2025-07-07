@@ -1,5 +1,9 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+
+from app.auth.jwt import get_optional_current_user
 from app.database import get_db
 from app.dto.response.ClusterResponseSchemas import ClusterResponse, MarkerResponse
 from app.services import cluster_sido, cluster_gungu, cluster_dongmyeon, cluster_marker
@@ -58,16 +62,21 @@ def get_dongmyeon_cluster(db: Session = Depends(get_db),
 @router.get(
     "/marker",
     response_model=MarkerResponse,
-    summary="마커 단위 매장 데이터",
+    summary="마커 단위 매장 데이터 (로그인은 옵션)",
     description="""
         지도에서 남서쪽, 북동쪽 위도/경도를 기준으로 실제 매장 데이터를 마커 단위로 반환 \n
         기본 위경도는 '대구 중구' 기준 \n
         카테고리 파라미터 추가 (필수 아님) (예: 감성/하이틴/캐릭터/복고/팝업/인기)
+        
+        # 찜 여부 칼럼 추가
+        로그인 시 찜 여부(is_favorite) 값 바뀜
     """)
 def get_marker_data(db: Session = Depends(get_db),
                     sw_lat: float = Query(35.861, description="남서 위도"),
                     sw_lng: float = Query(128.591, description="남서 경도"),
                     ne_lat: float = Query(35.876, description="북동 위도"),
                     ne_lng: float = Query(128.609, description="북동 경도"),
-                    category: str = Query(None, description="필터할 카테고리 이름 (예: 복고)")):
-    return cluster_marker.get_filtered_markers(db, sw_lat, sw_lng, ne_lat, ne_lng, category)
+                    category: Optional[str] = Query(None, description="필터할 카테고리 이름 (예: 복고)"),
+                    user_info: Optional[dict] = Depends(get_optional_current_user), # 로그인 정보 (옵션)
+):
+    return cluster_marker.get_filtered_markers(db=db, sw_lat=sw_lat, sw_lng=sw_lng, ne_lat=ne_lat, ne_lng=ne_lng, category=category, user_info=user_info)

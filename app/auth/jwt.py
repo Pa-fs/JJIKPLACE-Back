@@ -1,6 +1,6 @@
 import datetime
 import os
-from fastapi import HTTPException, status, Security
+from fastapi import HTTPException, status, Security, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt, ExpiredSignatureError, JWTError
 from datetime import timedelta
@@ -56,3 +56,10 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(bearer
     #     )
     token = credentials.credentials
     return decode_jwt_token(token)
+
+optional_bearer = HTTPBearer(auto_error=False)
+
+def get_optional_current_user(credentials: HTTPAuthorizationCredentials = Depends(optional_bearer)):
+    if not credentials:
+        return None
+    return decode_jwt_token(credentials.credentials)
