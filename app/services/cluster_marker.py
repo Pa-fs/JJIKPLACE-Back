@@ -63,7 +63,7 @@ def get_filtered_markers(db: Session, sw_lat: float, sw_lng: float, ne_lat: floa
         d["thumbnail_url"] = get_full_azure_url(thumb) if thumb else None
 
         # 해시태그 변환
-        raw = d.pop("category_list", "")
+        raw = d.pop("category_list", "") or ""
         d["categories"] = [f"#{n.strip()}" for n in raw.split(",") if n.strip()]
 
         # is_favorite 이미 bool
