@@ -13,7 +13,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
+    "http://localhost:3000","https://jjikplace.netlify.app"
 ]
 
 app.add_middleware(
