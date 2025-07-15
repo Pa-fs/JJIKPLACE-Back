@@ -61,7 +61,9 @@ def get_studio_ranking(db, days, m, limit):
             PhotoStudio.thumbnail_url,
             subq.c.R,
             subq.c.v,
-            wr_expr
+            wr_expr,
+            PhotoStudio.lat,
+            PhotoStudio.lng,
         )
         .join(subq, PhotoStudio.ps_id == subq.c.ps_id)
         .filter(subq.c.v >= m) # 최소 리뷰 수 m개 이상
@@ -95,7 +97,9 @@ def get_studio_ranking(db, days, m, limit):
             avg_rating= round(s.R, 2),
             review_cnt= int(s.v),
             weighted_rating= round(s.wr, 3),
-            thumbnail_url= get_full_azure_url(s.thumbnail_url) if s.thumbnail_url else None
+            thumbnail_url= get_full_azure_url(s.thumbnail_url) if s.thumbnail_url else None,
+            lat= s.lat,
+            lng= s.lng,
         )
     )
 

@@ -32,6 +32,8 @@ class RankedStudio(BaseModel):
     weighted_rating: float = Field(..., description="가중평균 점수")
     thumbnail_url: Optional[str] = Field(..., description="매장 대표 썸네일")
     rank: int = Field(..., description="매장 랭킹")
+    lat: float = Field(..., description="위도")
+    lng: float = Field(..., description="경도")
 
     class Config:
         orm_mode = True

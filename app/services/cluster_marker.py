@@ -19,7 +19,7 @@ def get_filtered_markers(db: Session, sw_lat: float, sw_lng: float, ne_lat: floa
           ps.lng,
           ps.road_addr,
           COALESCE(ROUND(AVG(r.rating), 1), 0) AS review_avg_score,
-          COUNT(r.review_id)      AS review_cnt,
+          COUNT(DISTINCT r.review_id)      AS review_cnt,
           ps.thumbnail_url,
           GROUP_CONCAT(DISTINCT c.name) AS category_list,
           CASE WHEN fs.user_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_favorite
