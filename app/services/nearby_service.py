@@ -1,10 +1,19 @@
+from typing import Optional
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.models import User, Review
 from app.util.azure_upload import get_full_azure_url
 
 
-def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: int, category: str = None):
+def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: int, category: Optional[str], user_info: Optional[dict]):
+
+    user_id = None
+    if user_info:
+        u = db.query(User).filter(User.email == user_info["email"]).first()
+        user_id = u.user_id if u else None
+
     # 거리 계산: Haversine Formula (km 단위)
     # 공통 SELECT 절 (distance_km 포함)
     distance_expr = """
@@ -27,14 +36,16 @@ def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: 
       ps.lng,
       ps.road_addr,
       COALESCE(ROUND(AVG(r.rating), 1), 0) AS review_avg_score,
-      COUNT(r.review_id) AS review_cnt,
+      COUNT(DISTINCT r.review_id) AS review_cnt,
       {distance_expr},
       ps.thumbnail_url,
-      GROUP_CONCAT(DISTINCT c.name) AS category_list
+      GROUP_CONCAT(DISTINCT c.name) AS category_list,
+      CASE WHEN fs.user_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_favorite
     FROM photo_studios ps
     LEFT JOIN review r ON ps.ps_id = r.ps_id
     LEFT JOIN photo_studio_category psc ON ps.ps_id = psc.ps_id
     LEFT JOIN category c ON psc.category_id = c.category_id
+    LEFT JOIN favorite_studio fs ON fs.ps_id = ps.ps_id AND fs.user_id = :user_id
     WHERE ps.lat IS NOT NULL
       AND ps.lng IS NOT NULL
       { 'AND c.name = :category' if category else '' }
@@ -61,7 +72,7 @@ def get_nearby_studios(db: Session, lat: float, lng: float, offset: int, limit: 
     ) AS filtered
     """
 
-    params = {"lat": lat, "lng": lng, "offset": offset, "limit": limit}
+    params = {"lat": lat, "lng": lng, "offset": offset, "limit": limit, "user_id": user_id}
     if category:
         params["category"] = category
 

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi.params import Query, Security
 from sqlalchemy.orm import Session
 
-from app.auth.jwt import bearer_scheme, get_current_user
+from app.auth.jwt import bearer_scheme, get_current_user, get_optional_current_user
 from app.database import get_db
 from app.dto.response.StudioResponseSchemas import NearbyScrollResponse, RankedStudio, PhotoStudioDetail, \
     PhotoStudioGalleryPage
@@ -14,7 +14,7 @@ from app.services import nearby_service, studio_service
 router = APIRouter()
 
 @router.get("/studios/nearby",
-            summary= "주변 가까운 매장 조회",
+            summary= "주변 가까운 매장 조회(로그인 옵션)",
             response_model=NearbyScrollResponse,
             description="""
                 주변 가까운 매장 조회 API (기본 5km 이내), NearbyScrollResponse Schema 참고 \n
@@ -30,9 +30,12 @@ def get_nearby_studios(
         lng: float = Query(128.59860663344742, description="선택된 마커의 경도"),
         offset: int = Query(0, ge=0, le=1000, description="스크롤 당 시작 위치"),
         limit: int = Query(3, ge=3, le=1000, description="스크롤 당 항목 요청 개수"),
-        category: Optional[str] = Query(None, description="필터할 카테고리 이름 (예: 복고)")
+        category: Optional[str] = Query(None, description="필터할 카테고리 이름 (예: 복고)"),
+        user_info: dict = Depends(get_optional_current_user),
 ):
-    items, total, has_more = nearby_service.get_nearby_studios(db, lat, lng, offset, limit, category)
+    items, total, has_more = nearby_service.get_nearby_studios(
+        db=db, lat=lat, lng=lng, offset=offset, limit=limit, category=category, user_info=user_info
+    )
     return {
         "items": items,
         "total": total,
@@ -117,10 +120,10 @@ def studio_detail(
 @router.get(
     "/studios/{ps_id}/images",
     response_model=PhotoStudioGalleryPage,
-    summary="사진관 갤러리",
+    summary="리뷰 사진 갤러리",
     description="""
         매장에 대한 리뷰 사진 갤러리
-        page, size 파라미터로 9개씩 이미지를 반환
+        page, size 파라미터로 9개씩 이미지를 반환 (사이즈 조정가능)
     """
 )
 def studio_gallery(
